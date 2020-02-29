@@ -1,0 +1,82 @@
+
+phpRedisAdmin is a simple web interface to manage Redis databases.
+
+Default port no of redis is 6379.
+
+ 
+ ##########PhpRedisAdmin(install and configuration on ubuntu)########
+ 
+ ####### firstly install redis-server....!!!!
+ 
+ sudo apt-get install redis -y
+ 
+ systemctl start redis-server
+ systemctl enable redis-server
+ 
+ 
+ ######## then install apache2.....!!!!!
+ 
+sudo apt-get install apache2 -y
+
+###### then install php-redis ......!!!!
+
+ sudo apt-get install php -y
+ sudo apt-get install php-redis -y
+ sudo apt-get install php7.2-mbstring -y
+ sudo apt install php7.2-dev -y
+
+####### use Apache to serve phpRedisAdmin, you can choose Nginx or any other web server.......
+
+ sudo sed -i "s/Options Indexes FollowSymLinks/Options FollowSymLinks/" /etc/apache2/apache2.conf
+
+ 
+#######Create a virtual host for phpRedisAdmin:.......!!!!!!
+ 
+vi /etc/apache2/sites-available/phpRedisAdmin.conf
+
+
+##### changes inside the vi editor...!!!!!
+
+
+<VirtualHost *:80>
+    ServerAdmin root@example.com
+    DocumentRoot /var/www/html/phpRedisAdmin/
+
+    <Directory /var/www/html/phpRedisAdmin/>
+    Options FollowSymLinks
+    AllowOverride All
+    </Directory>
+</VirtualHost>
+
+######Download phpRedisAdmin using git:.........!!!!!
+
+ cd ~
+    git clone https://github.com/ErikDubbelboer/phpRedisAdmin.git
+   cd phpRedisAdmin
+   git clone https://github.com/nrk/predis.git vendor
+   cp includes/config.sample.inc.php includes/config.inc.php
+    cd
+
+##### to check phpredisadmin......!!!!!!!
+
+ ls -ltr
+ 
+######Move the directory to the virtual host location we setup earlier:......!!!!
+ 
+     sudo mv ~/phpRedisAdmin /var/www/html
+    cd /var/www/html/
+	
+     ls -ltr
+	 
+######to give permissions to phpRedisAdmin.....
+	 
+     sudo chown -Rf www-data phpRedisAdmin/
+     chmod -Rf 775 phpRedisAdmin/
+     a2ensite phpRedisAdmin.conf
+     apache2ctl configtest
+     systemctl restart apache2
+
+    
+   systemctl restart apache2
+
+#### now finished.........!!!!!!!

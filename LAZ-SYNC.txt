@@ -1,0 +1,33 @@
+LAZ - PREPROD SYNC FROM LIVE:
+
+Database:
+First go to prod mysql and copy the s3 location to copy the latest backup file into devdb /data/tempsync
+All commands should be used within SCREEN
+1. copy backup from live s3 to dev db /data/tempsync & gunzip -d backupfile
+2. Replace www.lazarusnaturals.com with preprod.lazarusnaturals.com:
+find . -type f -name "*.*" -print0 | xargs -0 sed -i '' -e 's/www.lazarusnaturals.com/preprod.lazarusnaturals.com/g'
+note : for dev sync replace it with dev.lazarusnaturals.com
+3. import it into preprod database
+
+Do the same with archivedb.
+
+Website:
+First go to web prod and copy the s3 location to copy the latest backup file into /var/www/html/
+All commands should be used within SCREEN
+
+1. rename the /var/www/html/preprod.lazarusnaturals.com to preprod.lazarusnaturals.com.bkp
+2. copy from s3 latest backup to /var/www/html/
+3. tar zxvf file.tar.gz
+4. File changes:
+  a. Copy the database and aws config changes from previous preprod directory (.bkp) 
+     and change it in fresh preprod files - /var/www/html/preprod.lazarusnaturals.com/wp-config.php
+	 
+  b. Change the archive db configuration - /var/www/html/preprod.lazarusnaturals.com/archiveOrders/config.php
+     Copy the configs from previous preprod directory to the newly copied fresh files from production.
+	 
+
+5. Invalidate all preprod CDN cache - cache clear.	 
+
+Instructions to Developers:
+1. Notify them the sync is done
+2. Tell them to change CDN url, do orders related tasks, disable SIP plugin, enable redis, cache clear and other required stuffs.

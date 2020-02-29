@@ -1,0 +1,144 @@
+WordPress is the world’s leading content management system. Used by tens of millions of webpages and 
+internet creators alike, WordPress is the backbone of most blogs and news outlets. Webpage performance 
+with WordPress is also typically one of the fastest available.
+
+WordPress is undoubtedly one of the most popular Content Management Systems (CMS) available in the market.
+WordPress can be installed in multiple ways – one of them is using LAMP. With this method you can host 
+yourvery own WordPress website on a VPS. That’s why in this tutorial, we’ll show you how to install WordPres on Ubuntu.
+
+
+#########Install Lamp With Wordpress############# 
+
+
+Step 1: Apache Web Server Installation
+
+#######To install the Apache web server, run the following command:
+
+ apt-get install apache2
+
+ systemctl enable apache2
+
+ systemctl restart apache2
+
+Step 2: Install PHP
+
+######The next step of our LAMP stack setup is to install PHP.
+
+
+ apt install php php-curl php-gd php-mbstring php-xml php-xmlrpc php-soap php-intl php-zip
+
+ apt install php-mysql  -y
+
+ php -v
+
+Step 3: Install the MySQL Database server
+
+########To install the default package, run the following command:
+
+ apt install mysql-server
+
+ mysql_secure_installation
+
+
+Step 4: Create a Database for WordPress
+
+ mysql -u root -p
+
+mysql> CREATE DATABASE wordpress;
+
+mysql> GRANT ALL PRIVILEGES ON wordpress.* TO 'abhi'@'localhost' IDENTIFIED BY 'temp123';
+
+mysql> FLUSH PRIVILEGES;
+
+mysql> exit;
+
+
+Step 5: Install WordPress
+
+Now we can proceed with the actual installation of WordPress.
+download and extract the latest WordPress installation files in
+document root directory (/var/www/html).
+
+ cd /var/www/html
+
+ wget -c http://wordpress.org/latest.zip
+
+ apt install unzip
+
+ unzip latest.zip
+
+ chown -R www-data:www-data wordpress
+
+ rm  latest.zip
+
+
+All the WordPress files will be now placed in the wordpress directory in /var/www/html/wordpress
+
+ cd /var/www/html/wordpress
+
+ mv wp-config-sample.php wp-config.php
+
+ vi wp-config.php
+
+( replacing database_name_here, username_here and password_here with your own details)
+It will look like this >
+
+// ** MySQL settings - You can get this info from your web host ** //
+/** The name of the database for WordPress */
+define('DB_NAME', 'wordpress');
+
+/** MySQL database username */
+define('DB_USER', 'kritesh');
+
+/** MySQL database password */
+define('DB_PASSWORD', 'temp');
+
+/** MySQL hostname */
+define('DB_HOST', 'localhost');
+
+/** Database Charset to use in creating database tables. */
+define('DB_CHARSET', 'utf8');
+
+/** The Database Collate type. Don't change this if in doubt. */
+define('DB_COLLATE', '');
+
+
+Step 5: Create the Virtual Host Files
+
+We can now create our virtual host files.
+create the virtual host configuration file for your domain like sam.com.conf
+
+ vi /etc/apache2/sites-available/your_domain.com.conf
+
+<VirtualHost *:80>
+ServerAdmin admin@sam.com
+ServerName sam.com
+ServerAlias www.sam.com
+DocumentRoot /var/www/html/wordpress
+<Directory /var/www/html/wordpress>
+Options Indexes FollowSymLinks
+AllowOverride All
+Require all granted
+</Directory>
+</VirtualHost>
+
+ a2ensite sam.com
+
+apache2ctl configtest
+
+ systemctl restart apache2
+
+
+Step 6: Configure WordPress
+
+
+we need to access the WordPress Web Interface and finish the installation.
+
+open your browser and navigate to:
+
+http://www.dev.com/
+
+
+
+
+

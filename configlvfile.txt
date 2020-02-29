@@ -1,0 +1,55 @@
+<VirtualHost *:80>
+
+        # Admin email, Server Name (domain name) and any aliases
+        ServerAdmin techsupport@sombahadurlimbu.com
+        ServerName sqsprocessor.prioticket.com
+        ServerAlias www.sqsprocessor.prioticket.com
+
+        Header set Access-Control-Allow-Origin "*"
+        # Index file and Document Root (where the public files are located)
+        DirectoryIndex index.php index.html
+        #DocumentRoot /var/www/html/sqsprocessor.prioticket.com
+        Redirect permanent / https://sqsprocessor.prioticket.com/
+
+
+  # Custom log file locations
+  #LogLevel warn
+        ErrorLog  /logs/sqsprocessor.prioticket.com-error_log
+        SetEnvIf Request_URI "\.(jpg|xml|png|gif|ico|js|css|swf|js?.|css?.)$" DontLog
+        CustomLog /logs/sqsprocessor.prioticket.com-access_log combined Env=!DontLog
+        #CustomLog "|/usr/bin/nc -u logserver 12201" graylog_access
+
+
+</VirtualHost>
+
+
+#NameVirtualHost *:443
+<VirtualHost *:443>
+        DirectoryIndex index.php index.html
+        DocumentRoot /var/www/html/sqsprocessor.prioticket.com
+        ServerName sqsprocessor.prioticket.com
+        ServerAlias www.sqsprocessor.prioticket.com
+
+
+        SSLEngine on
+        SSLCertificateFile /etc/apache2/ssl/STAR.prioticket.crt
+        SSLCertificateKeyFile /etc/apache2/ssl/STAR.prioticket_pvt.key
+        SSLCertificateChainFile /etc/apache2/ssl/STAR.prioticket_chain.crt
+
+        SSLProtocol all -SSLv2
+        SSLHonorCipherOrder On
+        SSLCipherSuite 'AESGCM:RC4:SHA384:SHA256:AES !aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!kEDH:!PSK:!SRP:!kECDH'
+  Header set Access-Control-Allow-Origin "*"
+
+
+
+  # Custom log file locations
+  LogLevel warn
+
+  ErrorLog  /logs/sqsprocessor.prioticket.com-error_log
+  SetEnvIf Request_URI "\.(jpg|xml|png|gif|ico|js|css|swf|js?.|css?.)$" DontLog
+  CustomLog /logs/sqsprocessor.prioticket.com-access_log combined_new Env=!DontLog
+  SetEnvIf Request_URI "^/som.txt$" DontLog
+#  CustomLog "|/usr/bin/nc -u logserver 12201" graylog_access
+  
+</VirtualHost>

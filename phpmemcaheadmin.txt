@@ -1,0 +1,96 @@
+ 
+##########Install and Configure Memcached on Ubuntu  server along with Phpmemcacheadmin####################
+ 
+####Memcached is a distributed memory object caching system which stored data in memory on key-value basis. 
+    It is very useful for optimizing dynamic websites and enabled speed by caching objects in memory. 
+ 
+#####Install Memcached Packages######### 
+ 
+ apt-get update -y
+ 
+ apt-get install memcached -y
+ 
+ 
+######Configure Memcached#############
+
+##under Memcache configuration file /etc/memcached.conf.
+
+    1.-d => Run Memcached in deamon mode. You can use this option to configure your Memcached server to run as service.
+    2.-m => Define the maximum number of Memory can be used by Memcached deamon. (default: 64 MB).
+	3.-p => Defind port for Memcached to listen on. (default: 11211).
+	4.-l => Defind the IP address to Memcached listen on. Set 0.0.0.0 to listen on all IPs(enterfaces) configured on system.
+	
+	
+######Install Memcached PHP Module##########
+ 
+ add-apt-repository ppa:ondrej/php
+ 
+ apt-get update -y
+ 
+ apt-get install -y php php-dev php-pear libapache2-mod-php
+ 
+######Install PHP Memcached module on your system........!!!!!!
+ 
+ apt-get install -y php-memcached
+ 
+#####Restart the Apache service....!!!
+      
+ service apache2 restart
+ 
+#####Check if Memcache php extension is enabled and working properly. Create a info.php file using following code
+ 
+ cd /var/www/html/
+ 
+ vi info.php
+  
+  <?php
+  phpinfo();
+  ?>
+  
+ service apache2 restart
+ 
+ 
+  cd
+  
+#######Install phpmemcacheadmin############
+  
+  wget https://github.com/hgschmie/phpmemcacheadmin/archive/master.zip
+ 
+######unzip the master.zip file....!!!!!
+ 
+  apt install unzip
+  unzip master.zip
+  
+  ls -ltr
+
+###### move the phpmemcacheadmin-master to /var/www/html/.....!!!!
+  
+  mv phpmemcacheadmin-master/ /var/www/html/
+  
+  cd /var/www/html/
+  
+  ls -ltr
+
+##### to Rename the phpmemcacheadmin-master to phpmemcacheadmin...!!!!
+  
+  mv phpmemcacheadmin-master phpmemcacheadmin
+  
+  ls -ltr
+  
+  service apache2 restart
+   
+###### to configure your website#######
+   
+  mkdir -p /var/www/html/solk.com
+  /home/kritesh/
+  ls -ltr
+  cd /var/www/html/
+  ls -ltr
+  cd
+  chown -Rf www-data:www-data /var/www/html/solk.com
+  chmod -Rf 775 /var/www/html/solk.com
+  vi /var/www/html/solk.com/index.html
+  vi /etc/apache2/sites-available/solk.com.conf
+  a2ensite solk.com
+  apache2ctl configtest
+  systemctl restart apache2

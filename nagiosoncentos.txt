@@ -1,0 +1,345 @@
+###########How To Install and Configure Nagios 4.4.3 on CentOS 7###########
+
+ Nagios is the most widely used open source monitoring tools which help us to monitor the
+ services and application that run’s on Windows, Linux, Routers and other network devices.
+ 
+ With the help of Nagios, you can monitor basic services and attributes. We can access the 
+ Nagios using web interface coming with the bundle and configuration need to be done on the 
+ file level.
+ 
+##########Services List########
+
+##Attributes##
+ 
+CPU load
+Memory usage
+Disk usage
+Logged in users
+Running processes
+etc.
+
+##Private Services##
+
+HTTP
+FTP
+SSH
+SMTP
+etc
+
+
+########Disable selinux on both server and client#######
+
+vi /etc/sysconfig/selinux#######
+
+selinux=disabled
+
+
+######Firewalld disabled on both server and client####
+
+ systemctl stop firewalld
+ systemctl disable firewalld
+ 
+######set hostname on both server and client ########
+
+ nagios.mit.com
+ 
+ client.mit.com
+ 
+#########set ip on both server and client ######
+vi /etc/hosts
+
+192.168.72.75 nagios.mit.com nagios
+
+192.168.72.79 client.mit.com client
+ 
+
+
+
+###########Install all packages in a single command###########
+
+ yum -y install httpd php gcc glibc glibc-common wget perl gd gd-devel unzip zip
+ 
+
+####Create a nagios user and nagcmd group for allowing the external commands to be 
+    executed through the web interface, add the nagios and apache user to be a part 
+	of the nagcmd group. 
+	
+  useradd nagios
+  groupadd nagcmd
+  usermod -a -G nagcmd nagios
+  usermod -a -G nagcmd apache
+  
+  
+  
+######Install Nagios Server#########
+
+##Download the latest version of Nagios Core using the terminal
+
+ cd /tmp/
+ wget https://assets.nagios.com/downloads/nagioscore/releases/nagios-4.4.3.tar.gz
+ tar -zxvf nagios-4.4.3.tar.gz
+ cd /tmp/nagios-4.4.3
+ 
+########Compile and Install Nagios.#############
+
+  ./configure --with-nagios-group=nagios --with-command-group=nagcmd
+  make all
+  make install
+  make install-init
+  make install-config
+  make install-commandmode
+  make install-daemoninit
+  
+   
+#######Install Nagios Web Interface#########
+
+  make install-webconf
+  
+#######Run the following command to install a Nagios exfoliation theme......!!!
+  
+ make install-exfoliation
+ 
+######Create a user account (nagiosadmin) for logging into the Nagios web interface.
+      Remember the password that you assign to this user – you’ll need it later.
+
+
+    htpasswd -c /usr/local/nagios/etc/htpasswd.users nagiosadmin
+	
+	
+ New password: temp
+ confirm password: temp
+ 
+	
+#####Restart Apache web server to make the new settings take effect.
+
+ systemctl restart httpd
+ systemctl enable httpd
+ 
+########Configure Nagios Server###########
+
+  vi /usr/local/nagios/etc/objects/contacts.cfg
+  
+  
+  Change the Email address field to receive the notification.
+  
+  define contact{
+        contact_name                    nagiosadmin             ; Short name of user
+        use                             generic-contact         ; Inherit default values from generic-contact template (defined above)
+        alias                           Nagios Admin            ; Full name of user
+
+        email                           server@mit.com      ; <<***** CHANGE THIS TO YOUR EMAIL ADDRESS ******
+        }
+		
+		
+########Install Nagios Plugins############
+
+ cd /tmp
+ wget https://nagios-plugins.org/download/nagios-plugins-2.2.1.tar.gz
+ tar -zxvf nagios-plugins-2.2.1.tar.gz
+ cd /tmp/nagios-plugins-2.2.1/		
+		
+  
+######Compile and install the Nagios plugins.#######
+
+ ./configure --with-nagios-user=nagios --with-nagios-group=nagios
+ make
+ make install 
+
+#####Start Nagios Server#########
+  
+  /usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+  
+  
+#####Nagios service#######
+
+  service nagios start 
+  
+#####Start Nagios on system startup######
+
+  chkconfig nagios on
+  
+  
+######Access Nagios Web Interface#########
+
+   http://192.168.72.75/nagios/
+
+
+ username : nagiosadmin
+ 
+ password:  temp 
+ 
+ 
+ 
+ 
+ ---------------------------------------------------------------------------------------------------------------------------------------------
+   
+  
+############How To Monitor Remote Linux Systems With Nagios Monitoring Tool(Client configuration###############
+
+ ######NRPE Plugin##########
+ 
+ Nagios Remote Plugin Executor (abbreviated as NRPE) plugin allows you to monitor applications and services running on remote Linux /
+ Windows hosts. This NRPE Add-on helps Nagios to monitor local resources like CPU, Memory, Disk, Swap, etc. of the remote host.
+ 
+#######Install NRPE Add-on & Nagios Plugins#########
+
+  rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm 
+  
+  
+  yum install -y nrpe nagios-plugins-all
+  
+  
+#####Configure NRPE Add-on###########
+
+ vi /etc/nagios/nrpe.cfg
+
+ Add the Nagios servers IP address, separated by comma like below.
+
+ allowed_hosts=192.168.72.75
+ 
+
+########Configure Nagios Checks##########
+
+  command[check_users]=/usr/lib64/nagios/plugins/check_users -w 5 -c 10
+  command[check_load]=/usr/lib64/nagios/plugins/check_load -w 15,10,5 -c 30,25,20
+  command[check_root]=/usr/lib64/nagios/plugins/check_disk -w 20% -c 10% -p /dev/mapper/centos-root
+  command[check_swap]=/usr/lib64/nagios/plugins/check_swap -w 20% -c 10%
+  command[check_total_procs]=/usr/lib64/nagios/plugins/check_procs -w 150 -c 200
+  
+
+#####Restart the NRPE service.#########
+
+  systemctl start nrpe
+  systemctl enable nrpe 
+  
+  
+  
+  
+-----------------------------------------------------------------------------------------------------------------------------------
+
+
+#########NOw again we have configure on Nagios Server##############
+
+  rpm -ivh https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  
+  
+  
+#######Install NRPE plugin############
+
+  yum -y install nagios-plugins-nrpe
+
+
+####Edit the Nagios configuration file to include all .cfg files#########
+
+  vi /usr/local/nagios/etc/nagios.cfg
+  
+ Add or uncomment the following line.
+
+ cfg_dir=/usr/local/nagios/etc/servers
+ 
+
+######Create a configuration directory###########
+
+ mkdir /usr/local/nagios/etc/servers
+
+
+######Configure Nagios Server#############
+
+ vi /usr/local/nagios/etc/objects/commands.cfg
+ 
+ add the following lines
+ 
+  # .check_nrpe. command definition
+define command{
+command_name check_nrpe
+command_line /usr/lib64/nagios/plugins/check_nrpe -H $HOSTADDRESS$ -t 30 -c $ARG1$
+}
+
+
+########Add a Linux host to Nagios server###########
+
+  vi /usr/local/nagios/etc/servers/client.itzgeek.local.cfg
+  
+  Copy the below content to the above file.
+  
+  
+  define host{
+                           
+            use                     linux-server            
+            host_name               client.mit.com            
+            alias                   client.mit.com            
+            address                 192.168.72.79
+                                    
+}                                   
+                                    
+define hostgroup{                   
+                                    
+            hostgroup_name          linux-server            
+            alias                   Linux Servers            
+            members                 client.mit.com
+}                                   
+                                    
+define service{                     
+                                    
+            use                     local-service            
+            host_name               client.mit.com            
+            service_description     SWAP Uasge            
+            check_command           check_nrpe!check_swap                          
+                                    
+}                                   
+                                    
+define service{                     
+                                    
+            use                     local-service            
+            host_name               client.mit.com           
+            service_description     Root / Partition            
+            check_command           check_nrpe!check_root                          
+                                    
+}                                   
+                                    
+define service{                     
+                                    
+            use                     local-service            
+            host_name               client.mit.com            
+            service_description     Current Users            
+            check_command           check_nrpe!check_users                         
+                                    
+}                                   
+                                    
+define service{                     
+                                    
+            use                     local-service            
+            host_name               client.mit.com            
+            service_description     Total Processes            
+            check_command           check_nrpe!check_total_procs                   
+                                    
+}                                   
+                                    
+define service{                     
+                                    
+            use                     local-service            
+            host_name               client.mit.com            
+            service_description     Current Load            
+            check_command           check_nrpe!check_load
+
+}
+  
+  
+ 
+ ########Verify Nagios for any errors.......!!!!!!!!
+ 
+ usr/local/nagios/bin/nagios -v /usr/local/nagios/etc/nagios.cfg
+ 
+ ############Restart the Nagios server######
+ 
+  systemctl restart nagios
+ 
+ 
+  
+ 
+  
+  
+  
+ 
+  
+ 
+ 

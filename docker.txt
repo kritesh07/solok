@@ -1,0 +1,140 @@
+#####Docker is an application that makes it simple and easy to run application processes in a container, 
+     which are like virtual machines, only more portable, more resource-friendly, and more dependent on the host operating system.
+
+#####Docker Explained: Reasons to use Containers
+
+** Containers have no guest OS and use the host’s operating system. So, they share relevant libraries & resources as and when needed.
+
+** Processing and execution of applications are very fast since applications specific binaries and libraries of containers run on the 
+   host kernel.
+
+** Booting up a container takes only a fraction of a second, and also containers are lightweight and faster than Virtual Machines.
+
+** Docker is a platform for developers and sysadmins to develop, deploy, and run applications with containers.This is often described
+   as containerization. Putting applications into containers leads to several
+
+
+####advantages:
+    Docker containers are always portable. This means that you can build containers locally and deploycontainers to any docker environment 
+    (other computers, servers, cloud, etc …)
+
+    Containers are lightweight because containers are sharing the host kernel (the host operating system)but can also handle the most 
+	complex applications
+
+    Containers are stackable, services can be stacked vertically and on-the-fly.
+
+
+
+###########Step 1 — Installing Docker###########
+
+#####First, update your existing list of packages:
+
+  sudo apt update
+
+#####Next, install a few prerequisite packages which let apt use packages over HTTPS:
+
+ sudo apt install apt-transport-https ca-certificates curl software-properties-common
+
+#####Then add the GPG key for the official Docker repository to your system:
+
+ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+#####Add the Docker repository to APT sources:
+
+ sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"
+
+ sudo apt update
+
+#####Finally, install Docker:
+
+ apt install docker-ce
+
+ systemctl status docker
+
+#####Using the Docker Command
+
+#####To view all available subcommands, type:
+
+ docker
+
+#####To view system-wide information about Docker, use:
+
+ docker info
+
+#####Working with Docker Images
+
+####You can search for images available on Docker Hub by using the docker command with the
+    search subcommand. For example, to search for the Ubuntu image, type:
+
+ docker search ubuntu
+
+OR if you want to search for centos, type:
+
+ docker search centos
+
+#####Execute the following command to download the official ubuntu image to your computer:
+
+ docker pull ubuntu
+
+#####To see the images that have been downloaded to your computer, type:
+
+ docker images
+
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+ubuntu              latest              113a43faa138        4 weeks ago         81.2MB
+
+Running a Docker Container
+
+#####As an example, let's run a container using the latest image of Ubuntu. The combination of
+     the -i and -t switches gives you interactive shell access into the container:
+
+ docker run -it ubuntu
+
+ Output
+ root@d9b100f2f636:/#
+
+
+#####Now you can run any command inside the container. For example, let's update the package databaseinside the container. 
+     You don't need to prefix any command with sudo, because you're operating insidethe container as the root user:
+
+ root@d9b100f2f636:/# apt update
+
+ root@d9b100f2f636:/# apt install apache
+
+#####Any changes you make inside the container only apply to that container.
+
+#####To exit the container, type exit at the prompt.
+
+Managing Docker Containers
+
+
+#####After using Docker for a while, you'll have many active (running) and inactive containers on
+     your computer. To view the active ones, use:
+
+ docker ps
+
+ output
+ d9b100f2f636      ubuntu    "/bin/bash"   About an hour ago   Exited (0) 8 minutes ago                      sharp_volhard
+
+
+#####How to move Docker container to another host
+
+#####Exporting a container means creating a compressed file from the container’s file system.
+     The exported file is saved as a ‘gzip’ file.
+
+ docker export container-name | gzip > container-name.gz
+
+
+#####This compressed file is then copied over to the new host via file transfer tools such as scp or rsync.
+     In the new host, this gzip file is then imported into a new container.
+
+zcat container-name.gz | docker import - container-name
+
+
+The new container created in the new host can be accessed using ‘docker run’ command.
+
+to enter running container 
+docker exec -it 2757e49e4a85 /bin/bash
+
+
+

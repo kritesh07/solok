@@ -1,0 +1,96 @@
+
+########Basic Server Administator Tasks########
+
+1.Top - command is used to show the Linux processes. It provides a dynamic real-time view of the running system.
+
+For examples: top 
+
+	PID: Shows task’s unique process id.
+	PR: Stands for priority of the task.
+	SHR: Represents the amount of shared memory used by a task.
+	VIRT: Total virtual memory used by the task.
+	USER: User name of owner of task.
+	%CPU: Represents the CPU usage.
+	TIME+: CPU Time, the same as ‘TIME’, but reflecting more granularity through hundredths of a second.
+	SHR: Represents the Shared Memory size (kb) used by a task.
+	NI: Represents a Nice Value of task. A Negative nice value implies higher priority, and positive Nice value means lower priority.
+	%MEM: Shows the Memory usage of task.
+	
+
+2.Netstat - command displays various network related information such as network connections, routing tables, interface statistics, 
+            masquerade connections, multicast memberships etc
+			
+Examples of some practical netstat command
+
+	# netstat -a | more : To show both listening and non-listening sockets.
+	# netstat -at : To list all tcp ports.
+	# netstat -au : To list all udp ports.
+	# netstat -l : To list only the listening ports.
+	# netstat -lt : To list only the listening tcp ports.
+	# netstat -lu : To list only the listening udp ports.
+	# netstat -lx : To list only the listening UNIX ports.
+	# netstat -s : To list the statistics for all ports.
+	# netstat -st(TCP/UDP) : To list the statistics for TCP/UDP ports.
+	# netstat -pt : To display the PID and program names.
+	# netstat -c : To print the netstat information continuously.
+	# netstat --verbose : To get the non-supportive address families in the system
+	# netstat -r : To get the kernel routing information.
+	# netstat -ap | grep ssh : To get the port on which a program is running.
+	# netstat -an | grep ':80' : To get the process which is using the given port.
+	# netstat -i : To get the list of network interfaces.
+	
+
+3.Lsof - command stands for List Of Open File. This command provides a list of files that are opened. Basically, it gives the 
+         information to find out the files which are opened by which process.
+		
+Options with Examples:
+    # lsof -u username : List all files opened by a user.
+    # lsof -u ^root : List all files which are opened by everyone except a specific user.
+    # lsof -c Mysql : List all open files by a particular Process.
+	# lsof -p process ID : List all open files that are opened by a particular process.
+	# lsof -p ^process ID : Files opened by all other PID.
+	# lsof -R : List parent process IDs.
+	# lsof -D directory path (+D /home/kritesh) : Files opened by a directory.
+	# lsof -i tcp :  Files opened by network connections.
+	
+		
+4. Telnet - is a protocol that allows you to connect to remote computers (called hosts) over a TCP/IP network (such as the Internet).		 
+	
+	For Example: telnet hostname="" or=""
+        Example:
+                 telnet localhost
+				 
+
+5.Curl - is a command line tool to transfer data to or from a server, using any of the supported protocols (HTTP, FTP, IMAP, POP3,
+         SCP, SFTP, SMTP, TFTP, TELNET, LDAP or FILE). This tool is preferred for automation, since it is designed to work without 
+		 user interaction. curl can transfer multiple file at once.
+
+   	For Example:
+    
+    # -o : saves the downloaded file on the local machine with the name provided in the parameters.
+      Syntax: curl -o [file_name] [URL...]
+	  Example: curl -o hello.zip ftp://speedtest.tele2.net/1MB.zip.
+
+    # -O : This option downloads the file and saves it with the same name as in the URL.
+      Syntax: curl -O [URL...]
+      Example: curl -O ftp://speedtest.tele2.net/1MB.zip
+
+    # -C – : This option resumes download which has been stopped due to some reason. This is useful 
+	         when downloading large files and was interrupted.	
+      Syntax: curl -C - [URL...]
+      Example: curl -C - -O ftp://speedtest.tele2.net/1MB.zip
+
+    # -u : curl also provides options to download files from user authenticated FTP servers.
+      Syntax: curl -u {username}:{password} [FTP_URL]
+	  Example: curl -u demo:password -O ftp://test.rebex.net/readme.txt
+	  
+	# -T : This option helps to upload a file to the FTP server.
+      Syntax: curl -u {username}:{password} -T {filename} {FTP_Location}
+
+	# –libcurl : This option is very useful from a developers perspective. If this option is appended to any cURL command, it outputs 
+	             the C source code that uses libcurl for the specified option. It is the code similar to the command line implementation.  
+
+	  Syntax:  curl [URL...] --libcurl [filename]
+      Example: curl https://www.geeksforgeeks.org > log.html --libcurl code.c
+
+6. Log Checks - 	  

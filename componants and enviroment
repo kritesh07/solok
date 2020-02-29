@@ -1,0 +1,42 @@
+					Components 
+					
+					
+(prioticket.com,  priohub.com, priomarket.com)
+Admin.prioticket.com    (administration of ticket rates or any business related)
+Pos.prioticket.com          (pos for secure ticket transactions)
+Web.prioticket.com        (for selling tickets)
+Sqs.prioticket.com	     (for queue)
+Reports.prioticket.com   (for any reports about tickets)
+API.prioticket.com           (for build applications)(Important)
+STAPI.prioticket.com       (ticket taker has only accept static IP)(static IP for calling)
+
+						REDIS Cluster
+						CND- cloud flare   
+							Databases
+							
+							
+MySQL Primary DB Cluster
+MySQL secondary DB Cluster  (this two database are 3 nodes REDIS cluster)
+RDS  MySQL 
+Red Shift	(AWS cluster management for manage cluster)
+Big Query/ Big Data
+Firebird DB
+ 
+
+ 
+						Environment 
+							(Test)
+							
+1) Shadow test  (before staging & after developers developed their server in their environment)
+
+							(non live)
+		(for testing database are same in primary and secondary in )
+		
+		
+		
+1) Staging   (after shadow test development then testing in real time 			   data)
+2) Demo	(for new clients demo server)
+3) Sandbox (for old clients for integrations of their coding)
+4) Shadow  (for new clients when demo server is busy on another 				  client)
+
+ 

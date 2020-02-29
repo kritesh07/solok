@@ -1,0 +1,255 @@
+
+A LAMP Stack is a set of open-source software that can be used to create websites and web applications. 
+LAMP is an acronym, and these stacks typically consist of the Linux operating system, the Apache HTTP Server, 
+the MySQL relational database management system, and the PHP programming language.
+
+
+
+
+
+
+########LAMP On ubuntu18.04 (static ip configuartion)
+
+netplan generate
+vi /etc/netplan/50-cloud-init.yaml
+
+####the inside
+
+network:
+   version: 2
+   ethernets:
+       enp0s3:
+         dhcp4: no
+         addresses: [192.168.72.69/24]
+         gateway4: 192.168.72.1
+         nameservers:
+            addresses: [8.8.8.8]
+		
+sudo netplan apply
+
+
+######to check its work or not then we have to do
+
+ ping 8.8.8.8
+
+
+########step for LAMP STACK(install and configuration)
+
+ sudo apt-get install apache2 -y
+ sudo ufw app list
+ sudo apt-get update
+ sudo ufw allow
+ 
+ 
+ ##### to create directory.....
+ 
+ mkdir -p /var/www/html/solk.com
+
+#### to add new user.....
+ 
+ useradd git
+ 
+ ###### to give ownership for the user
+ 
+ chown -Rf www-data:git /var/www/html/solk.com
+ 
+ ####### to change the mode of user and give permission
+ 
+ chmod -Rf 775 /var/www/html/solk.com
+
+
+ vi /var/www/html/solk.com/index.html
+ 
+######## then we to write anything inside of vi..!!!
+ 
+ hey how r u ...!!!
+ 
+ :wq!(save and exit the current work)
+
+####### subdomain configuartion under 
+ 
+  vi /etc/apache2/sites-available/solk.com.conf
+  
+####### then inside we have to do this...!!!!
+  
+  <VirtualHost *:80>
+        ServerAdmin solk.com
+        ServerName www.solk.com
+        DirectoryIndex index.php index.html
+        DocumentRoot /var/www/html/solk.com
+</VirtualHost>
+
+##### to give directory permissions in
+
+  vi /etc/apache2/apache2.conf
+  
+##### then inside we have to do this...!!!!
+
+  <Directory /var/www/html/solk.com>
+        Options Indexes MultiViews FollowSymLinks
+        DirectoryIndex index.php index.html
+        AllowOverride all
+        Allow From all
+   </Directory>
+
+###### after this we have set host ip 
+
+###### going to c dive in windows.....
+
+      c:/windows/system32/drivers/etc/host
+
+###### then open host file in notepad then
+
+###### give your host ip in that...!!!!
+
+      192.168.72.69 solk.com www.solk.com
+
+###### save it by  using 
+
+ctrl+s
+
+
+then
+
+###### to enable ur apache site 
+    
+	 a2ensite solk.com
+	 
+###### to test ur configuartion
+	 
+   apache2ctl configtest
+   
+####### to restart apache2 to implement your changes
+   
+   systemctl restart apache2
+   
+##### install MYSQL Server   
+   
+   sudo apt-get install mysql-server -y
+   sudo ufw allow mysql
+   sudo systemctl start mysql
+   sudo systemctl enable mysql
+   sudo systemctl status mysql
+   
+   
+   mysql -u root -p
+   
+###### then exit from mysql using exit command
+   
+   exit
+      
+##### install php
+   
+   sudo apt-get install php -y
+   systemctl restart apache2
+   
+   
+#####Installing and Configure phpMyAdmin###########
+
+sudo apt update
+
+apt install phpmyadmin -y
+
+######### afterwards,, we have to create user in mysql......!!!!!
+
+mysql -u root -p
+password:
+
+
+mysql> CREATE USER 'kritesh'@'localhost' IDENTIFIED BY 'temp';
+
+mysql> GRANT ALL PRIVILEGES ON *.* TO 'kritesh'@'localhost';
+
+mysql> exit;
+
+systemctl restart apache2
+
+
+#######You can now access the web interface by visiting your server's domain name or public IP address followed by /phpmyadmin:
+
+www.solk.com/phpmyadmin
+
+finished......!!!!!
+
+
+
+
+   
+   
+
+   
+   
+   
+   
+
+   
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 

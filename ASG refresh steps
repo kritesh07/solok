@@ -1,0 +1,49 @@
+										ASG REFRESH
+					
+				in auto scalling groups edit auto scaling group 
+				Desired Capacity    1
+				Min					1	
+				Max					1
+				and save it
+				
+				in instances
+				copy instance ip and log in 	
+			
+				go to server, select ASG, open properties and paste the ip
+			    in server run ssh
+
+				enter as sudo su
+				
+				# su - www-data
+				# crontab -l
+				run the script ( /etc/somscript/sync.sh )4-5 times
+				
+				>go to new instace then right click on image and then create image , create AMI of new instance (paste the template date) (ASG-TEMPLATE-30JULY-2019)
+				 then click on check box no reboot.
+				
+				>go to launch configuration and copy launch configuration
+				
+				>select new created AMI (search template date)
+				
+				>Choose Instance Type  (then select m4.2xlarge)
+				
+				>Copy Launch Configuration from LC-30JULY-2019  (paste date)
+				
+				> Advanced Details then check and select (Assign a public IP address to every instance.)
+				
+				>Configure Security Group
+						select (1.CustomIP_Cloudflare, 2.CustomIP_Som, 3.PROD-WEB-SG)
+					
+					check all details and create launch configuration
+					
+			    >again we have to do
+				 and select current date Asg.
+				 
+				 in auto scalling groups edit auto scaling group 
+				Desired Capacity    0
+				Min					0	
+				Max					0
+				and save it
+					
+					
+					delete old launch configuration 

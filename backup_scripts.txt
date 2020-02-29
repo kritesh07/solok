@@ -1,0 +1,108 @@
+    
+###############MONITORING AND BACKUP REPORT FOR DB & WEB BACKUPS
+	
+	
+####### TO go home folder then create a new folder the name should be anything	
+
+	 cd /home
+##### to create a dir using mkdir
+	 
+     mkdir som
+
+##### to see it is create or not by using command 	 
+	 cd /home/ ; ls -ltr
+
+
+######then we have to put scripts inside by using vi editor 
+
+     vi monitor.sh
+     vi db_monitor.sh
+	 
+#### then have to give permissions to access the script
+     
+	 chmod -Rf 755 db_monitor.sh
+	 chmod -Rf 755 monitor.sh
+	 
+#####the we to run the script
+	 
+     sh monitor.sh 99
+	 sh db_monitor.sh 99
+	 
+##### the we have to create three more folder which name is db_backups,web_backups and scripts..	 
+     
+	 we have to create folder in cd /home/som/ then now we have to create
+	 
+     mkdir -p /data01/backups/db_backups
+     mkdir -p /data01/backups/web_backups
+     mkdir -p /data01/backups/scripts
+	 
+#### the we have to put script of db_backup.sh and web_backup.sh in folder scripts..
+	 
+     cd /data01/backups/scripts
+     ls -ltr
+	 
+	 
+######then we have to put scripts inside by using vi editor 	 
+	 
+     vi db_backup.sh
+     vi web_backup.sh
+	 
+#### to check it is present there or not so use..
+	 
+     ls -ltr
+	 
+#### then have to give permissions to access the script
+	 
+     chmod -Rf 755 db_backup.sh
+     chmod -Rf 755 web_backup.sh
+	 
+	 
+     ls -ltr
+     
+##### to give cron job for the scripts of web_backup.sh and db_backup.sh
+
+     crontab -e
+ then press 2
+
+##### then we have to write scripts in it...
+
+    15 0 * * * /data01/backups/scripts/web_backup.sh > /dev/null
+	0 0 * * * /data01/backups/scripts/db_backup.sh > /dev/null
+	
+#### then we have to check by using the command
+
+     crontab -l
+	 
+##### now we have to create backupuser in mysql..
+     
+	 mysql -u root -p
+	 
+	 mysql> CREATE USER 'backupuser'@'localhost' IDENTIFIED BY 'temp';
+     mysql> GRANT ALL PRIVILEGES ON * . * TO 'backupuser'@'localhost';
+     mysql> FLUSH PRIVILEGES;
+	 mysql> exit;
+	 
+	 
+#### now u have to access the monitor scripts.
+	 
+     cd /home/som/
+     sh monitor.sh 99
+     sh db_monitor.sh 99
+	 
+#### then u have to access the scripts.
+     
+     cd /data01/backups/scripts/
+    
+     sh web_backup.sh
+     sh db_backup.sh
+	 
+	 
+##### finished.....!!!!
+     
+
+
+
+
+
+
+

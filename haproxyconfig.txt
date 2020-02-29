@@ -1,0 +1,47 @@
+global
+        log 127.0.0.1   local0
+        log 127.0.0.1   local1 notice
+        maxconn 4096
+        uid 99
+        gid 99
+        #daemon
+        debug
+        #quiet
+
+defaults
+        log     global
+        mode    http
+        option  tcplog
+        option  dontlognull
+        retries 3
+        redispatch
+        maxconn 2000
+        contimeout      5000
+        clitimeout      50000
+        srvtimeout      50000
+
+frontend pxc-front
+bind *:3306
+mode tcp
+default_backend pxc-back
+
+frontend stats-front
+bind *:8080
+mode http
+default_backend stats-back
+
+backend pxc-back
+mode tcp
+balance leastconn
+option httpchk
+server pxc1 192.168.72.76:3306 check port 9200 inter 12000 rise 3 fall 3
+server pxc2 192.168.72.77:3306 check port 9200 inter 12000 rise 3 fall 3
+
+
+backend stats-back
+mode http
+balance roundrobin
+stats enable
+stats uri /haproxy?stats
+stats refresh 5s
+stats auth admin:admin

@@ -1,0 +1,288 @@
+ 
+#####centos7 (static ip configuration) and Percona-XtraDB-Cluster-57 #############
+ 
+ 
+vi /etc/sysconfig/network-scripts/ifcfg-enp0s3
+	
+ONBOOT= yes
+BOOTPROTO= static
+IPADDR= 192.168.72.62
+NETMASK= 255.255.255.0
+GATEWAY= 192.168.72.1
+BROADCAST= 192.168.72.255
+ 
+vi /etc/resolv.conf
+
+search centos
+namerserver 192.168.72.1
+nameserver 8.8.8.8
+then
+systemctl restart network
+     
+#####then set hostname percona1
+hostname percona1
+hostname percona2
+
+#####then set the hosts ip      
+    
+vi /etc/hosts
+
+192.168.72.62 percona1
+192.168.72.64 percona2
+192.168.72.65 haproxy
+
+#####Opening Firewall in all the Cluster’s
+
+systemctl start firewalld
+   
+firewall-cmd --zone=public --add-port=3306/tcp --permanent
+firewall-cmd --zone=public --add-port=4567/tcp --permanent
+firewall-cmd --zone=public --add-port=4568/tcp --permanent
+firewall-cmd --zone=public --add-port=4444/tcp --permanent
+          
+                 OR
+firewall-cmd --permanent --add-port={3306/tcp,4444/tcp,4567/tcp,4568/tcp}				 
+
+firewall-cmd --reload
+firewall-cmd --list-all
+
+#####Disable Selinux
+
+vi /etc/sysconfig/selinux
+
+#####then restart your centos by using init 6 or directly close ur terminal
+
+#####to check status of selinux
+  sestatus
+  
+  
+  then its is disabled...!!!! 
+  
+###### Install Percona XtraDB Binaries using Yum 
+
+ yum install https://repo.percona.com/yum/percona-release-latest.noarch.rpm
+                       
+					   OR
+  
+yum install http://www.percona.com/downloads/percona-release/redhat/0.1-4/percona-release-0.1-4.noarch.rpm                                                              4/percona-release-0.1-4.noarch.rpm
+    
+     
+ cd /etc/yum.repos.d 
+ ls -ltr
+ vi /percona-release.repo
+ 
+ #####then do changes inside 
+ 
+ gpgcheck=0
+ gpgcheck=0
+ 
+ yum install Percona-XtraDB-Cluster-57
+ 
+######THEN start the mysql service 
+
+systemctl start mysqld
+
+#######its generated automatic password for mysql root 
+
+sudo grep 'temporary password' /var/log/mysqld.log
+
+#####it required password then we have to put automatic generated password......!!!!
+mysql -u root -p
+password:
+
+#####then we have to change the password of mysql by using ALTER command....!!!!
+ 
+mysql> ALTER USER 'root'@'localhost' IDENTIFIED BY 'temp';
+mysql> exit ;
+
+
+#####Create the Required  MySQL User’s.....!!!!!
+
+mysql -u root -p
+password:temp
+
+CREATE USER 'sstuser'@'localhost' IDENTIFIED BY 'temp';
+
+GRANT RELOAD, LOCK TABLES, PROCESS, REPLICATION CLIENT ON *.* TO 'sstuser'@'localhost';
+
+FLUSH PRIVILEGES;
+
+######## the we have to stop mysql service...!!!!!
+
+systemctl stop mysqld
+
+########Configure file  of percona xtradb cluster....!!!!!!
+
+vi /etc/my.cnf
+
+[mysqld]
+wsrep_provider=/usr/lib64/galera3/libgalera_smm.so
+
+wsrep_cluster_name=pxc-cluster
+wsrep_cluster_address=gcomm://192.168.72.76,192.168.72.77
+
+wsrep_node_name=pxc1
+wsrep_node_address=192.168.72.76
+
+wsrep_sst_method=xtrabackup-v2
+wsrep_sst_auth=sstuser:temp
+
+pxc_strict_mode=ENFORCING
+
+binlog_format=ROW
+default_storage_engine=InnoDB
+innodb_autoinc_lock_mode=2
+
+#####then start first percona1 with.....
+
+systemctl start mysql@bootstrap
+   
+######at last to check the cluster is successfully connected
+ 
+mysql -u root -p
+
+
+######then we have run the command
+ 
+ show global status like '%wsrep%'
+ 
+ then it gives a output...
+ 
+ ########then install xinetd on both nodes pxc1 and pxc2.....!!!!1
+ 
+ yum install xinetd -y
+ 
+ ###### then we have add one line in /etc/services config file........!!!!!
+ 
+ echo 'mysqlchk 9200/tcp # mysqlchk' >> /etc/services
+ 
+               OR
+
+mysqlchk      9200/tcp    #	mysqlchk	
+
+systemctl start xinetd
+systemctl enable xinetd
+
+
+#######the we have go in mysql and create clustercheckuser for sync the both nodes with haproxy..........!!!!!!
+
+mysql -u root -p
+password:
+
+mysql> GRANT PROCESS ON *.* TO 'clustercheckuser'@'localhost' IDENTIFIED BY 'clustercheckpassword!';
+
+mysql> flush privileges;
+
+
+#########then we have to check clustercheckuser is sync or not?
+
+clustercheck
+
+########now, we have to firewalld stop on both nodes......!!!!
+
+systemctl stop firewalld
+
+
+############pxc5.7 with haproxy############ 
+
+yum install haproxy -y
+
+##### the we have to go on config file of haproxy...!!!!!!
+
+
+#####then set the hosts ip      
+    
+vi /etc/hosts
+
+192.168.72.65 haproxy
+192.168.72.62 percona1
+192.168.72.64 percona2
+
+
+
+vi /etc/haproxy/haproxy.cfg
+
+#####now we have to put config file inside on haproxy.....!!!!
+
+
+global
+        log 127.0.0.1   local0
+        log 127.0.0.1   local1 notice
+        maxconn 4096
+        uid 99
+        gid 99
+        #daemon
+        debug
+        #quiet
+
+defaults
+        log     global
+        mode    http
+        option  tcplog
+        option  dontlognull
+        retries 3
+        redispatch
+        maxconn 2000
+        contimeout      5000
+        clitimeout      50000
+        srvtimeout      50000
+
+frontend pxc-front
+bind *:3306
+mode tcp
+default_backend pxc-back
+
+frontend stats-front
+bind *:8080
+mode http
+default_backend stats-back
+
+backend pxc-back
+mode tcp
+balance leastconn
+option httpchk
+server pxc1 192.168.72.76:3306 check port 9200 inter 12000 rise 3 fall 3
+server pxc2 192.168.72.77:3306 check port 9200 inter 12000 rise 3 fall 3
+
+
+backend stats-back
+mode http
+balance roundrobin
+stats enable
+stats uri /haproxy?stats
+stats refresh 5s
+stats auth admin:admin
+
+
+######now we have to check syntax is ok or not.....
+
+haproxy -f -c /etc/haproxy/haproxy.cfg
+
+#####if its fine then ok.....
+
+####now restart haproxy......!!!!
+
+systemctl restart haproxy
+
+#### and stop firewall.....
+
+systemctl stop firewalld
+
+########finished......!!!!!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	   
+			   
+

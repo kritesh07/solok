@@ -1,0 +1,294 @@
+
+#########Ldap(openldap) install and configuration on centos 7########
+
+
+####OpenLDAP is an open-source implementation of Lightweight Directory Access Protocol developed by 
+    OpenLDAP project. LDAP is an Internet protocol that email and other programs use to look up contact 
+	information from a server. It is released under OpenLDAP public license; it is available for all 
+	major Linux distributions, AIX, Android, HP-UX, OS X, Solaris, Windows and z/OS.
+
+####It functions as a relational database in certain ways and can be used to store any information. 
+    LDAP is not limited to store the information; it is also used as a backend database for “single sign-on”.
+	where one password for a user is shared between many services.
+	
+#####MY ENVIRONMENT SETUP:#######
+ HostName				IP Address				OS				Purpose
+server.example.com	    192.168.72.79        centos 7            LDAP Server
+client.example.com      192.168.72.74        centos 7            LDAP Client
+
+                           OR
+						   
+Make an host entry on each machine in vi /etc/hosts for name resolution.
+192.168.72.79 server.example.com   server
+192.168.72.74 client.example.com   client						   
+
+#####Install OpenLDAP Packages########
+	
+######For server configuration:
+
+ yum -y install openldap compat-openldap openldap-clients openldap-servers openldap-servers-sql openldap-devel
+ 
+#####Start the LDAP service and enable.....!!!
+ 
+ systemctl start slapd
+ systemctl enable slapd
+ 
+#####Verify the LDAP.......!!!!
+
+ netstat -antup | grep -i 389 
+
+####Setup LDAP admin password######
+
+ slappasswd
+
+ New password:
+ Re-enter new password:
+ 
+ {SSHA}H/9vfTXKQLvPhf+eS/IPBxGqcGILgHTS
+
+#############Configure OpenLDAP server###########
+
+#####OpenLDAP servers configuration files are found in /etc/openldap/slapd.d/. To start with the configuration of LDAP, 
+     we would need to update the variables “olcSuffix” and “olcRootDN“.
+ 
+    1.olcSuffix – Database Suffix, it is the domain name for which the LDAP server provides the information. In simple words, 
+	it should be changed to your domain name.
+
+    2.olcRootDN – Root Distinguished Name (DN) entry for the user who has the unrestricted access to perform all administration 
+	activities on LDAP, like a root user.
+  
+    3.olcRootPW – LDAP admin password for the above RootDN.  
+
+#####Please create a .ldif file.###########
+ 
+ vi db.ldif
+
+######Replace the encrypted password ({SSHA}d/thexcQUuSfe3rx3gRaEhHpNJ52N8D3) with the password you generated in the previous step.
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcSuffix
+olcSuffix: dc=example,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootDN
+olcRootDN: cn=ldapadm,dc=example,dc=com
+
+dn: olcDatabase={2}hdb,cn=config
+changetype: modify
+replace: olcRootPW
+olcRootPW: {SSHA}H/9vfTXKQLvPhf+eS/IPBxGqcGILgHTS
+
+#####Once you are done with the ldif file, send the configuration to the LDAP server.
+
+ ldapmodify -Y EXTERNAL  -H ldapi:/// -f db.ldif
+
+#####Make a changes to /etc/openldap/slapd.d/cn=config/olcDatabase={1}monitor.ldif (Do not edit manually) file to restrict the 
+     monitor access only to ldap root (ldapadm) user not to others.
+	 
+ vi monitor.ldif
+
+
+dn: olcDatabase={1}monitor,cn=config
+changetype: modify
+replace: olcAccess
+olcAccess: {0}to * by dn.base="gidNumber=0+uidNumber=0,cn=peercred,cn=external, cn=auth" read by dn.base="cn=ldapadm,dc=example,dc=com" read by * none
+
+#####Once you have updated the file, send the configuration to the LDAP server.
+
+ ldapmodify -Y EXTERNAL  -H ldapi:/// -f monitor.ldif
+
+############Set up LDAP database###############
+
+####Copy the sample database configuration file to /var/lib/ldap and update the file permissions.
+
+ cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+
+ chown ldap:ldap /var/lib/ldap/*
+
+#####Add the cosine and nis LDAP schemas.
+
+ ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
+
+ ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif
+
+ ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif
+ 
+######Generate base.ldif file for your domain.
+ 
+ vi base.ldif
+
+dn: dc=example,dc=com
+dc: example
+objectClass: top
+objectClass: domain
+
+dn: cn=ldapadm ,dc=example,dc=com
+objectClass: organizationalRole
+cn: ldapadm
+description: LDAP Manager
+
+dn: ou=People,dc=example,dc=com
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group,dc=example,dc=com
+objectClass: organizationalUnit
+ou: Group
+
+#####Build the directory structure.
+
+ ldapadd -x -W -D "cn=ldapadm,dc=example,dc=com" -f base.ldif
+ 
+Output:
+
+  Enter LDAP Password: 
+ adding new entry "dc=itzgeek,dc=local"
+
+ adding new entry "cn=ldapadm ,dc=itzgeek,dc=local"
+
+ adding new entry "ou=People,dc=itzgeek,dc=local"
+
+ adding new entry "ou=Group,dc=itzgeek,dc=local"
+ 
+##########Create LDAP user##########
+
+useradd kritesh
+ls -ltr
+
+ cat /etc/passwd
+ 
+ cd /home/kritesh/
+ 
+ ls -ltr 
+ 
+#####Command to check uid or gid of your user.....!!!!
+ 
+ id kritesh
+ 
+ uid=1000(kritesh) gid=1000(kritesh) groups=1000(kritesh)
+ 
+ 
+######Let’s create an LDIF file for a new user called kritesh.
+ 
+ vi kritesh.ldif
+ 
+dn: uid=kritesh,ou=People,dc=example,dc=com
+objectClass: top
+objectClass: account
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: kritesh
+uid: kritesh
+uidNumber: 1000
+gidNumber: 1000
+homeDirectory: /home/kritesh
+loginShell: /bin/bash
+gecos: kritesh [Admin (at) example]
+userPassword: temp
+shadowLastChange: 17058
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7
+
+#####Use the ldapadd command with the above file to create a new user called “kritesh” in OpenLDAP directory.
+
+ ldapadd -x -W -D "cn=ldapadm,dc=example,dc=com" -f kritesh.ldif
+
+Output: – Enter ldapadm password.
+
+Enter LDAP Password:
+adding new entry "uid=kritesh,ou=People,dc=example,dc=com"
+
+#####Assign a password to the user.....!!!!!
+
+ ldappasswd -s temp -W -D "cn=ldapadm,dc=example,dc=com" -x "uid=kritesh,ou=People,dc=example,dc=com"
+ 
+ Where,
+       -s specify the password for the username.
+	   -x username for which the password is changed.
+       -D Distinguished name to authenticate to the LDAP server.
+ 
+ 
+#####Verify LDAP entries.....!!!!!
+ 
+ ldapsearch -x cn=kritesh -b dc=example,dc=com
+ 
+#######Add the LDAP service to the firewall (TCP 389)########
+ 
+ firewall-cmd --permanent --add-service=ldap
+ 
+ firewall-cmd --reload
+
+########Enable LDAP logging##############
+
+####Configure Rsyslog to log LDAP events to log file /var/log/ldap.log
+ 
+ vi /etc/rsyslog.conf
+ 
+ local4.*                                                /var/log/ldap.log
+ 
+####Restart the rsyslog service.
+ 
+ systemctl restart rsyslog
+ 
+############LDAP client configuration to use LDAP Server ####################
+
+####Install LDAP client packages on the client machine.
+
+ yum install -y openldap-clients nss-pam-ldapd
+
+######Add the client machine to LDAP server for single sign-on. 
+      Replace “192.168.72.79” with your LDAP server’s IP address or hostname.
+	  
+ authconfig --enableldap --enableldapauth --ldapserver=192.168.72.79 --ldapbasedn="dc=itzgeek,dc=local" 
+ --enablemkhomedir --update	  
+	  
+#### Restart the LDAP client service...
+
+ systemctl restart  nslcd
+
+#######Verify or Testing LDAP Login########
+
+##getent command to get the LDAP entries from the LDAP server
+
+ getent passwd kritesh
+
+Output: kritesh:x:1000:1000:kritesh [Admin (at) example]:/home/kritesh:/bin/bash
+
+######To verify the LDAP, log in using the LDAP user “kritesh” on the client machine.#####
+
+ sudo su - kritesh
+ 
+ Output:
+ 
+ Creating directory '/home/kritesh'.
+ /usr/bin/id: cannot find name for group ID 1000
+ 
+ [kritesh@fresh ~]$
+ 
+ 
+ 
+ ........finished....!!!!!!!!
+
+
+
+ 
+ 
+ 
+  
+  
+ 
+
+
+~
+
+
+
+
+
+
+
+
+

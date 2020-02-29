@@ -1,0 +1,49 @@
+ cd /s3backups/webserver_54.215.155.180/web_backups
+ cp  collectivelaboratories.com.tar.gz /var/www/html/
+ tar zxvf collectivelaboratories.com.tar.gz 
+ rm -rf collectivelaboratories.com.tar.gz
+ mv dev.collectivelaboratories.com dev.collectivelaboratories.com.bak
+  mv collectivelaboratories.com/ dev.collectivelaboratories.com/
+   chown -Rf www-data:git dev.collectivelaboratories.com
+   chmod -Rf 775 dev.collectivelaboratories.com
+  cd dev.collectivelaboratories.com
+  vi wp-config.php 
+  
+  
+  // ** MySQL settings ** //
+/** The name of the database for WordPress */
+define( 'DB_NAME', 'cldbdev' );
+
+/** MySQL database username */
+define( 'DB_USER', 'clddevuser' );
+
+/** MySQL database password */
+define( 'DB_PASSWORD', '6rvgqnDk3xb80OM4sFHxq' );
+
+/** MySQL hostname */
+define( 'DB_HOST', 'devdb.collectivelaboratories.com' );
+
+/** Database Charset to use in creating database tables. */
+define( 'DB_CHARSET', 'utf8mb4' );
+
+/** The Database Collate type. Don't change this if in doubt. */
+define( 'DB_COLLATE', 'utf8mb4_unicode_520_ci' );
+
+
+ cd  /s3backups/webserver_54.215.155.180/db_backups
+  cp  cldblive.sql.gz /home/som/
+   cd /home/som/
+   gunzip -d cldblive.sql.gz 
+   mysql -h devdb.collectivelaboratories.com -u collectiveadmin -pbzrcyUCXre1bW6f71sC6V6ei6
+   after that  	mysql>drop database cldbdev;
+				mysql>create database cldbdev;
+				
+	mysql -h devdb.collectivelaboratories.com -u collectiveadmin -pbzrcyUCXre1bW6f71sC6V6ei6 cldbdev < cldblive.sql
+			any error in lines the remove lines
+			vi cldblive.sql     (line no)
+			a2ensite dev.collectivelaboratories.com.conf 
+			apache2ctl configtest
+			service apache2 restart
+	
+  
+  

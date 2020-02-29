@@ -1,0 +1,27 @@
+1. first check if there is any datetime column in the table
+
+2. if there is, then check if the values doesn't contain NULL
+
+3. if it has null, then update it to current_timestamp
+
+4. entry into bigquery_settings table
+
+make sure tbl_initialize is 1
+5. run run_all.sh
+
+SELECT COUNT ( * )  FROM promocode
+WHERE  created_at IS NULL
+
+SELECT COUNT( * ) FROM promocode
+WHERE  updated_at IS NULL
+
+-- 165515
+
+UPDATE promocode
+SET created_at = CURRENT_TIMESTAMP
+WHERE created_at IS NULL;
+
+
+UPDATE promocode
+SET updated_at = CURRENT_TIMESTAMP
+WHERE updated_at IS NULL;

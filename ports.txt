@@ -1,0 +1,48 @@
+1	TCP	tcpmux	TCP port service multiplexer
+20	TCP	ftp-data	FTP data port
+21	TCP	ftp	File Transfer Protocol (FTP) port; sometimes used by File Service Protocol (FSP)20	TCP	ftp-data	FTP data port
+21	TCP	ftp	File Transfer Protocol (FTP) port; sometimes used by File Service Protocol (FSP)
+22	TCP	ssh	Secure Shell (SSH) service
+23	TCP	telnet	The Telnet service
+25	TCP	smtp	Simple Mail Transfer Protocol (SMTP)
+37	TCP	time	Time Protocol
+53	TCP	domain	domain name services (such as BIND)
+67	TCP	bootps	Bootstrap Protocol (BOOTP) services; also used by Dynamic Host Configuration Protocol (DHCP) services
+68	TCP	bootpc	Bootstrap (BOOTP) client; also used by Dynamic Host Control Protocol (DHCP) clients
+80	TCP	http	HyperText Transfer Protocol (HTTP) for World Wide Web (WWW) services
+107	TCP	rtelnet	Remote Telnet
+110	TCP	POP3	Post Office Protocol version 3
+115	TCP	sftp	Secure File Transfer Protocol (SFTP) services
+123	TCP	ntp	Network Time Protocol (NTP)
+143	TCP	IMAP	Internet Message Access Protocol (IMAP)
+161	TCP	snmp	Simple Network Management Protocol (SNMP)
+389	TCP	ldap	Lightweight Directory Access Protocol (LDAP)
+443	TCP	https	Secure Hypertext Transfer Protocol (HTTP)
+636	TCP	ldaps	Lightweight Directory Access Protocol over Secure Sockets Layer (LDAPS)
+873	TCP	rsync	rsync file transfer services
+992	TCP	telnets	Telnet over Secure Sockets Layer (TelnetS)
+514	UDP	syslog	UNIX system logging service2049		nfs [nfsd]	Network File System (NFS)
+3306		mysql	MySQL database service
+465	tcp	smtps	Simple Mail Transfer Protocol over Secure Sockets Layer (SMTPS)
+3128	tcp	squid	Squid Web proxy cache
+5432		postgres	PostgreSQL database
+8080		webcache	World Wide Web (WWW) caching service
+6379		redis		
+9418 tcp	git			git can also run over ssh (often used for pushing), http, https, and less often others.
+10050 tcp   zabbix
+8140  tcp   puppet
+4567 is reserved for Galera Cluster replication traffic. Multicast replication uses both TCP and UDP transport on this port.
+4568 is the port for Incremental State Transfer.
+4444 is used for all other State Snapshot Transfer.
+
+9000 gray log
+
+9300 tcp  Elasticsearch  
+
+27017 tcp mongoDB   The default port for mongod and mongos instances. 
+
+11211 udp Memcached
+
+
+
+ 

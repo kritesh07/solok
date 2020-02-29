@@ -1,0 +1,145 @@
+	
+	The LEMP software stack is a group of software that can be used to serve dynamic web pages and web applications. 
+	This is an acronym that describes a Linux operating system, with an Nginx (pronounced like “Engine-X”) web server. 
+	The backend data is stored in the MariaDb database and the dynamic processing is handled by PHP
+	
+	
+	
+	#####Install Nginx web server######### 
+	
+	apt update -y
+	apt install nginx -y
+	
+	#####Run the UFW command######
+	
+	ufw allow 'Nginx HTTP'
+	      or
+    ufw disable
+	
+	#####To secure the installation MySQL######
+	
+    apt install mysql-server -y
+    mysql_secure_installation
+	
+    ######Create a test database and user with access permissions for testing########
+	
+	mysql -u root -p
+	 
+	 mysql> create user 'kittu'@'localhost' identified by 'temp';
+     mysql> grant all privileges on *.* to 'kittu'@'localhost';
+	 mysql> flush privileges;
+	 mysql> exit;
+	
+	######Install the PHP FastCGI Processing Manager, which includes the core PHP dependencies also additional
+          helper package, php-mysql, which will allow PHP to communicate with your database backend.
+
+    apt install php-fpm php-mysql -y
+	systemctl start php7.2-fpm
+	
+	
+	#######Now creaate website and also insatll phpmyadmin for web interface.###########
+	
+	
+	mkdir -p /var/www/html/kittu.com
+	
+    vi /var/www/html/kittu.com/index.html
+	
+	hey......!!!!!!!
+	
+	
+	##### to give permission and ownership for website#######
+	
+	chown -Rf git:git /var/www/html/kittu.com/ 
+	chmod -Rf 775 /var/www/html/kittu.com/
+	
+	
+	######he default server block configuration file, to your new server block configuration file############
+
+    vi /etc/nginx/sites-available/kittu.com.conf
+	
+	
+	server {
+        listen 80;
+        root /var/www/html/kittu.com;
+        index index.php index.html index.htm index.nginx-debian.html;
+        server_name www.kittu.com;
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+
+        location ~ \.php$ {
+                include snippets/fastcgi-php.conf;
+                fastcgi_pass unix:/var/run/php/php7.2-fpm.sock;
+        }
+
+        location ~ /\.ht {
+                deny all;
+        }
+}
+
+     #####location ~ \.php$ — This location block handles the actual PHP processing by pointing Nginx to the
+          fastcgi-php.conf configuration file and the php7.2-fpm.sock file, which declares what socket is
+          associated with php-fpm.
+		  
+    #####location ~ /\.ht — The last location block deals with .htaccess files, which Nginx does not process.
+         By adding the deny all directive, if any .htaccess files happen to find their way into the document
+         root they will not be served to visitors.
+		  
+
+    ##### A Nginx server block is like a virtual host in Apache. We will not use the default server block
+           because it’s inadequate to run PHP code and if we modify it, it becomes a mess. So remove the
+           default symbloic-link in sites-enabled directory by running the following command.
+
+      
+
+    cd /etc/nginx/sites-enabled/
+	
+	ls -ltr
+	
+	rm -rf default
+	
+	
+	#####Enable your new server block by creating a symbolic link from your new server block configuration file 
+	
+	ls -ltr
+	
+	ln -s /etc/nginx/sites-available/kittu.com.conf
+	
+	##### to check everything is ok or not.....
+	
+	nginx -t
+	
+	##### restart your nginx server#####
+	
+	systemctl restart nginx
+	
+	#####Now you can install phpMyAdmin#####
+	
+	apt install phpmyadmin -y
+	
+	######Do not select Apache or Lighthttp Because we are using Nginx as web server,
+          Press tab and then OK...!!!
+
+	
+	#####we need to create a symbolic link from the installation files to Nginx's document root directory#####
+	
+	cd /var/www/html/kittu.com
+	
+	ls -ltr
+	
+	 ln -s /usr/share/phpmyadmin/
+	 
+	           or 
+
+	ln -s /etc/nginx/sites-available/kittu.com.conf /etc/nginx/sites-enabled/		   
+	 
+	 ##### restart your nginx server#####
+	 
+	 systemctl restart  nginx
+	 
+	 
+	 ######finished...!!!!!
+	 
+	
+	

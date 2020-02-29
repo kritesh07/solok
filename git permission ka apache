@@ -1,0 +1,20 @@
+GIT  Group Permissions
+
+first will check .git directory in sites
+ # var/www/html/
+  then check  
+  # cat config 
+{  bare = false
+  sharedRepository = group }
+  this group permission are not set then apply permissions 
+  
+GIT PERMISSIONS TO GROUP:
+# cd /var/www/html/
+# chown -Rf www-data:git stagingtest.prioticket.com (any site of show .git directory)
+# chmod -Rf 775 stagingtest.prioticket.com
+# cd stagingtest.prioticket.com
+# chown -Rf www-data:git .git/
+# chmod -Rf 775 .git/
+# cd .git/
+# git config core.sharedRepository group
+# cat config

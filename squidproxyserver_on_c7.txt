@@ -1,0 +1,126 @@
+
+########How to Install and Configure Squid Proxy on CentOS 7##################
+
+
+ A proxy server is a computer which sits between two endpoint devices and acts as an intermediate device. When the client computer 
+ requests a resource from the server, it may be a file or a web page, the request is sent to the proxy server first.The proxy server 
+ then sends the request to the destination server and obtains the resource sent by the server. Once the resource is obtained by the 
+ proxy server, it sends the resource to the client machine. The use of a proxy server is that it can cache the resource, for example 
+ if a website is accessed frequently from a proxy server, it's likely that the proxy server will have the content of the site in its 
+ cache, it can now serve the webpage directly to the user. A proxy server can be used to facilitate security, administrative controls 
+ and caching services. Proxy servers can also be used for anonymity as whenever obtaining a resource from a server, proxy server uses 
+ its own IP address rather than the client's IP address.
+ 
+ 
+######Installing Squid############
+
+ yum -y install squid
+
+ 
+##########Once the installation is completed, start and enable the Squid service:
+
+ systemctl start squid
+ 
+ systemctl enable squid
+ 
+
+
+########Configuring Squid############
+
+  vi /etc/squid/squid.conf
+  
+##Allow IP Address to Use the Internet Through Your Proxy Server
+
+  acl localnet src 192.168.72.70/24
+  
+#####then restart squid service############
+
+ systemctl restart squid  
+ 
+#########################Blocking Websites###################### 
+  
+########Create a file called blocked_sites and then specify the path of this file in ACL to block websites in squid proxy.
+
+ vi /etc/squid/blocked_sites
+ 
+##Now enter the list of sites you want to block. One website per line.
+
+ www.gmail.com
+ www.facebook.com
+ www.techmint.com
+ www.amazon.com
+ 
+#####Save the file and exit the editor. 
+
+
+
+########Now open the Squid configuration file again using the following command.
+
+  vi /etc/squid/squid.conf
+  
+##Enter the following lines under acl list and http_access list.
+
+  acl blocked_sites dstdomain "/etc/squid/blocked_sites"
+  http_access deny blocked_sites  
+  
+  
+####Reload the Squid daemon############
+
+  systemctl restart squid 
+  
+  
+Note:- If you follow this Document correctly and still not able to block YouTube.com and Facebook.com, so you might be trying 
+to block “HTTPS domains” e.g (https://youtube.com or https://facebook.com) using this method. This method will not work for HTTPS domains.
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+#######################On Client Machine (Windows)##################
+
+ Now open up  chrome browser on client computer and point squid server IP in proxy settings with 3128 port.
+ 
+ STEP1 : Click the "Triple dot" button and then "select Settings".
+ 
+ STEP2 : you see the "advanced" link and then click on it.
+ 
+ STEP3 : then click on "Accessibility" 
+ 
+ STEP4 : you can see "Open proxy settings"
+ 
+ STEP5 : On the Internet Properties window, click on the "LAN settings" button.
+ 
+ STEP6 : In the LAN Settings, uncheck the box that says "Automatically detect settings." And then, in the Proxy Server 
+         section, click the checkbox to enable "Use a proxy server for your LAN..."
+ 
+ STEP7 : In the Address field, enter the IP Address of your Proxy Server, and the Proxy Server Port Number in the Port field.
+ 
+ 
+ 
+ Press the OK button and then press OK again to save your settings.
+ 
+ 
+ then type the URL in search bar yahoo.com
+ 
+ then, u can check its blocked ur yahoo.com site.
+ 
+ ...................finished.......!!!!!!
+ 
+
+
+  
+  
+  
+  
+ 
+
+
+ 
+ 
+
+
+
+
+ 

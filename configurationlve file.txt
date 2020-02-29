@@ -1,0 +1,72 @@
+<VirtualHost *:80>
+
+  # Admin email, Server Name (domain name) and any aliases
+  ServerAdmin techsupport@24x7-itsupport.com
+  ServerName api.prioticket.com
+  ServerAlias www.api.prioticket.com
+
+  Header set Access-Control-Allow-Origin "*"
+  # Index file and Document Root (where the public files are located)
+  DirectoryIndex index.php index.html
+  #DocumentRoot /var/www/html/api.prioticket.com
+#Redirect permanent / https://api.prioticket.com/
+RewriteEngine on
+RewriteCond %{SERVER_PORT} !^443$
+RewriteRule ^/(.*) https://%{HTTP_HOST}/$1 [NC,R=301,L] 
+
+<Directory /var/www/html/api.prioticket.com/>
+        Options  -Indexes +Multiviews +FollowSymLinks
+        DirectoryIndex index.php index.html
+        AllowOverride All
+        Allow from all
+</Directory>
+
+
+  # Custom log file locations
+  LogLevel warn
+  #LogFormat "%{forensic-id}n %h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined_new
+
+  ErrorLog  /logs/api.prioticket.com-error_log
+  SetEnvIf Request_URI "\.(jpg|xml|png|gif|ico|js|css|swf|js?.|css?.)$" DontLog
+  CustomLog /logs/api.prioticket.com-access_log combined_new Env=!DontLog
+  SetEnvIf Request_URI "^/som.txt$" DontLog
+ # CustomLog "|/bin/nc -u logserver 12201" graylog_access 
+
+</VirtualHost>
+
+#NameVirtualHost *:443
+<VirtualHost *:443>
+        DirectoryIndex index.php index.html
+        DocumentRoot /var/www/html/api.prioticket.com
+                ServerName api.prioticket.com
+                ServerAlias www.api.prioticket.com
+
+
+        SSLEngine on
+        SSLCertificateFile /etc/apache2/ssl/STAR.prioticket.crt
+        SSLCertificateKeyFile /etc/apache2/ssl/STAR.prioticket_pvt.key
+        SSLCertificateChainFile /etc/apache2/ssl/STAR.prioticket_chain.crt
+
+        SSLProtocol all -SSLv2
+        SSLHonorCipherOrder On
+        SSLCipherSuite 'AESGCM:RC4:SHA384:SHA256:AES !aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!kEDH:!PSK:!SRP:!kECDH'
+  Header set Access-Control-Allow-Origin "*"
+
+<Directory /var/www/html/api.prioticket.com/>
+        Options  -Indexes +Multiviews +FollowSymLinks
+        DirectoryIndex index.php index.html
+        AllowOverride All
+        Allow from all
+</Directory>
+
+
+  # Custom log file locations
+  LogLevel warn
+
+  ErrorLog  /logs/api.prioticket.com-error_log
+  SetEnvIf Request_URI "\.(jpg|xml|png|gif|ico|js|css|swf|js?.|css?.)$" DontLog
+  CustomLog /logs/api.prioticket.com-access_log combined_new Env=!DontLog
+  SetEnvIf Request_URI "^/som.txt$" DontLog
+ # CustomLog "|/bin/nc -u logserver 12201" graylog_access
+  
+</VirtualHost>

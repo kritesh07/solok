@@ -1,0 +1,310 @@
+
+Percona XtraDB Cluster is a database clustering solution for MySQL. 
+It ensures high availability, prevents downtime and data loss, and provides linear scalability for a growing environment.
+
+Default port no of percona is same as mysql(3306). 
+
+
+
+#####centos6 (static ip configuration)
+
+vi /etc/sysconfig/network-scripts/ifcfg-eth0
+
+ONBOOT= yes
+BOOTPROTO= static
+IPADDR= 192.168.72.62
+NETMASK= 255.255.255.0
+GATEWAY= 192.168.72.1
+BROADCAST= 192.168.72.255
+
+vi /etc/resolv.conf
+
+search centos
+namerserver 192.168.72.1
+nameserver 8.8.8.8
+then
+service network restart
+
+yum update
+
+vi /etc/sysconfig/network
+
+#####then set hostname on percona1 and percona 2
+
+NETWORKING=yes
+HOSTNAME=percona1
+
+
+
+#####then set the hosts ip
+
+vi /etc/hosts
+
+192.168.72.62 percona1
+192.168.72.64 percona2
+
+#####Opening Firewall in all the Cluster’s 
+
+
+iptables -I INPUT -p tcp -m tcp --dport 3306 -j ACCEPT
+iptables -I INPUT -p tcp -m tcp --dport 4567 -j ACCEPT
+iptables -I INPUT -p tcp -m tcp --dport 4568 -j ACCEPT
+iptables -I INPUT -p tcp -m tcp --dport 4444 -j ACCEPT
+iptables -I INPUT -p tcp -m tcp --dport 3506 -j ACCEPT
+iptables -I INPUT -p tcp -m tcp --dport 3606 -j ACCEPT
+
+######activate Firewall if Required :
+
+service iptables save
+service iptables restart
+
+#####Disable Selinux 
+
+ vi /etc/sysconfig/selinux
+ 
+#####then restart your centos by using init 6 or directly close ur terminal
+
+#####to check status of selinux
+
+  sestatus
+  
+then its is disabled...!!!!  
+
+
+#####Installing  all the Required Dependency Binaries 
+
+yum -y remove mysql-libs 
+
+yum -y remove mariadb-libs 
+
+yum -y install perl-DBD-MySQL.x86_64 
+
+yum -y install perl-IO-Socket-SSL 
+
+yum -y install telnet 
+
+yum -y install  libevent-devel.x86_64 
+
+yum -y install openssl098e.x86_64 
+
+yum  -y install perl-Time-HiRes 
+
+yum  -y install nc     
+
+yum  -y install perl-Digest-SHA.x86_64 
+
+yum -y install perl-TermReadKey.x86_64 
+
+yum -y install compat-readline5.x86_64 
+
+yum -y install epel-release 
+
+yum -y install libev 
+
+yum -y install socat  
+  
+yum -y install php.x86_64 
+
+yum install -y git scons gcc gcc-c++ openssl check cmake bison boost-devel asio-devel libaio-devel ncurses-devel readline-devel pam-devel
+
+###### Install Percona XtraDB Binaries using Yum 
+ 
+ yum install http://www.percona.com/downloads/percona-release/redhat/0.1-3/percona-release-0.1-3.noarch.rpm
+
+ cd /etc/yum.repos.d 
+ ls -ltr
+ vi /percona-release.repo
+ 
+ #####then do changes inside 
+ 
+ gpgcheck=0
+ gpgcheck=0
+ 
+  yum install Percona-XtraDB-Cluster-56
+  
+  
+##### Setting up Mysql Instance.......
+ 
+ service mysql start
+ service mysql status
+ 
+ 
+ ######Reset the Root Password
+ 
+ /usr/bin/mysqladmin -u root password 'temp1234'
+ 
+ ######Next we need to run the mysql_secure_installation script so we can improve the security
+ 
+ /usr/bin/mysql_secure_installation
+ 
+ 
+##### Configure Mysql on System Startup
+ 
+ chkconfig --level 345 mysql on
+ chkconfig --add mysql
+ chkconfig mysql on
+ 
+ 
+ mysql -u root -p
+ then enter ur password:
+ 
+ 
+ #####Create the Required  MySQL User’s 
+ 
+CREATE USER 'sstuser'@'localhost' IDENTIFIED BY 'temp';
+GRANT RELOAD, LOCK TABLES, REPLICATION CLIENT ON *.* TO 'sstuser'@localhost;
+
+CREATE USER 'sstuser'@'%' IDENTIFIED BY 'temp';
+GRANT RELOAD, LOCK TABLES, REPLICATION CLIENT ON *.* TO 'sstuser'@'%';
+ 
+ then exit
+ 
+ #########service mysql stop both percona1 and percona2
+ 
+ service mysql stop
+ 
+########Configure file  of percona xtradb cluster
+ 
+ vi /etc/my.cnf
+ 
+ 
+  [mysqld]
+#bind-address=127.0.0.1
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES 
+skip-host-cache
+skip-name-resolve
+max_connections=1500
+max_connect_errors=20000
+wsrep_replicate_myisam=1
+auto_increment_increment=1
+max_allowed_packet=512M
+innodb_buffer_pool_size=10G
+query-cache-type=1
+key_buffer=32M
+query_cache_limit=4M
+query_cache_size=64M
+join_buffer_size=2M
+#table_open_cache=2500
+table_open_cache=250
+
+# Path to Galera library
+wsrep_provider=/usr/lib64/libgalera_smm.so
+
+# Cluster connection URL contains IPs of node#1, node#2 and node#3
+wsrep_cluster_address=gcomm://192.168.72.106,192.168.72.107
+
+# In order for Galera to work correctly binlog format should be ROW
+binlog_format=ROW
+
+# MyISAM storage engine has only experimental support
+default_storage_engine=InnoDB
+
+# This is a recommended tuning variable for performance
+innodb_locks_unsafe_for_binlog=1
+
+# This changes how InnoDB autoincrement locks are managed and is a requirement for Galera
+innodb_autoinc_lock_mode=1
+
+# Node #2 address
+wsrep_node_address=192.168.72.107
+
+# Cluster name
+wsrep_cluster_name=my_centos_cluster
+
+# SST method
+wsrep_sst_method=xtrabackup-v2
+
+#Authentication for SST method
+wsrep_sst_auth="sstuser:temp"
+wsrep_replicate_myisam=1 
+
+
+
+
+#####then start first percona1 with......!!!! 
+ 
+ service mysql bootstrap-pxc
+ 
+######and second percona2 is
+
+ servcie mysql start 
+ 
+ then it is succesfully connected...!!!!
+ 
+ 
+ 
+ ######at last to check the cluster is successfully connected
+ 
+ mysql -u root -p
+ 
+ 
+ ######then we have run the command
+ 
+ show global status like '%wsrep%'
+ 
+ then it gives a output...
+
+ finish......!!!!
+ 
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

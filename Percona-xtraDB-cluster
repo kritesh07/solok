@@ -1,0 +1,74 @@
+				PERCONA XTRADB CLUSTER CONFIGURATION
+
+first add enry in /etc/hosts  (all of nodes) &
+add ports in firewall (3306,4444,4567,4568)
+then
+first will check connection of mysql
+
+telnet 192.168.72.106 3306
+
+permantly disable SElinux in /etc/selinux/config
+install epel repository 
+and install perconana repository & install perconana cluster package
+then 
+configuration in
+
+this configuration in all nodes
+in /etc/my.cnf
+
+{  [mysqld]
+#bind-address=127.0.0.1
+sql_mode=NO_ENGINE_SUBSTITUTION,STRICT_TRANS_TABLES 
+skip-host-cache
+skip-name-resolve
+max_connections=1500
+max_connect_errors=20000
+wsrep_replicate_myisam=1
+auto_increment_increment=1
+max_allowed_packet=512M
+innodb_buffer_pool_size=10G
+query-cache-type=1
+key_buffer=32M
+query_cache_limit=4M
+query_cache_size=64M
+join_buffer_size=2M
+#table_open_cache=2500
+table_open_cache=250
+
+# Path to Galera library
+wsrep_provider=/usr/lib64/libgalera_smm.so
+
+# Cluster connection URL contains IPs of node#1, node#2 and node#3
+wsrep_cluster_address=gcomm://192.168.72.106,192.168.72.107
+
+# In order for Galera to work correctly binlog format should be ROW
+binlog_format=ROW
+
+# MyISAM storage engine has only experimental support
+default_storage_engine=InnoDB
+
+# This is a recommended tuning variable for performance
+innodb_locks_unsafe_for_binlog=1
+
+# This changes how InnoDB autoincrement locks are managed and is a requirement for Galera
+innodb_autoinc_lock_mode=1
+
+# Node #2 address
+wsrep_node_address=192.168.72.107
+
+# Cluster name
+wsrep_cluster_name=my_centos_cluster
+
+# SST method
+wsrep_sst_method=xtrabackup-v2
+
+#Authentication for SST method
+wsrep_sst_auth="sstuser:temp"
+wsrep_replicate_myisam=1    }
+
+
+then start first node with  
+mysql bootstrap-pxc
+
+and second node is 
+mysql start 
